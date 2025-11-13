@@ -12,8 +12,7 @@ jobs:
     steps:
       - name: Checkout my repo
         uses: actions/checkout@v4
-        with:
-          persist-credentials: false
+        # ⚠️ persist-credentials 생략 → 기본값 true → GITHUB_TOKEN 사용됨
 
       - name: Download upstream README
         run: |
@@ -21,21 +20,16 @@ jobs:
             -o upstream_README.md
 
       - name: Update README if changed
-        env:
-          PAT: ${{ secrets.SYNC_REPO_PAT }}
         run: |
-          # README.md가 없거나, 기존 README와 upstream이 다르면 갱신
           if [ ! -f README.md ] || ! cmp -s README.md upstream_README.md; then
             mv upstream_README.md README.md
 
-            git config user.name "0eun2"
-            git config user.email "youngeun.choi26@gmail.com"
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
             git add README.md
             git commit -m "chore: sync README from upstream" || echo "No changes to commit"
-
-            git remote set-url origin https://x-access-token:${PAT}@github.com/SSAFY-Gumi4-Algorithm-Study/choigorithm.git
-            git push origin HEAD:main
+            git push   # ← 여기 딱 한 줄만 있으면 끝
           else
             echo "README is already up to date."
           fi
